@@ -196,6 +196,48 @@ export default {
 
             this.state.processStatus = 'Processed!'
             this.state.processDone = true
+
+            // 🧠 LLM call to your FastAPI backend
+            const telemetry = {
+                attitude: this.state.timeAttitude,
+                trajectory: this.state.currentTrajectory,
+                flightModes: this.state.flightModeChanges
+            }
+
+            // Safety check: ensure telemetry data is complete before making the request
+            if (
+                Object.keys(telemetry.attitude).length === 0 ||
+                telemetry.trajectory.length === 0 ||
+                telemetry.flightModes.length === 0
+            ) {
+                console.warn('[LLM] Telemetry data is incomplete. Skipping LLM call.')
+                return
+            }
+
+            // Make request to backend LLM endpoint
+            fetch('http://127.0.0.1:8000/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    question: 'What was the max altitude?',
+                    telemetry: telemetry
+                })
+            })
+                .then(async res => {
+                    if (!res.ok) {
+                        const errorText = await res.text()
+                        throw new Error(`[${res.status}] ${errorText}`)
+                    }
+                    return res.json()
+                })
+                .then(data => {
+                    alert('LLM Answer: ' + data.answer)
+                })
+                .catch(err => {
+                    console.error('[LLM ERROR]', err)
+                    alert('LLM request failed: ' + err.message)
+                })
+
             // Change to plot view after 2 seconds so the Processed status is readable
             setTimeout(() => { this.$eventHub.$emit('set-selected', 'plot') }, 2000)
 
