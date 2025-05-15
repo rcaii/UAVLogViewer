@@ -42,6 +42,11 @@
                     <hr>
                     <a class="centered-section"> Show / hide </a>
                     <div v-if="state.processDone" class="show-hide">
+                        <label>
+                          <i class="fa fa-comments circle"></i>
+                          <input type="checkbox" v-model="state.showChat">
+                          <a class="check-font"> Flight Log Chat </a>
+                        </label>
                         <label v-if="state.params">
                           <i class="fa fa-cogs circle"></i>
                           <input type="checkbox" v-model="state.showParams">
