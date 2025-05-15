@@ -16,6 +16,7 @@
         <AttitudeViewer @close="state.showAttitude = false" v-if="state.showAttitude"></AttitudeViewer>
         <MagFitTool     @close="state.showMagfit = false" v-if="state.showMagfit"></MagFitTool>
         <EkfHelperTool  @close="state.showEkfHelper = false" v-if="state.showEkfHelper"></EkfHelperTool>
+        <ChatWidget     @close="state.showChat = false" v-if="state.showChat"></ChatWidget>
         <div class="container-fluid" style="height: 100%; overflow: hidden;">
 
             <sidebar/>
@@ -51,6 +52,7 @@ import ParamViewer from '@/components/widgets/ParamViewer.vue'
 import MessageViewer from '@/components/widgets/MessageViewer.vue'
 import DeviceIDViewer from '@/components/widgets/DeviceIDViewer.vue'
 import AttitudeViewer from '@/components/widgets/AttitudeWidget.vue'
+import ChatWidget from '@/components/widgets/ChatWidget.vue'
 import { store } from '@/components/Globals.js'
 import { AtomSpinner } from 'epic-spinners'
 import { Color } from 'cesium'
@@ -196,47 +198,7 @@ export default {
 
             this.state.processStatus = 'Processed!'
             this.state.processDone = true
-
-            // 🧠 LLM call to your FastAPI backend
-            const telemetry = {
-                attitude: this.state.timeAttitude,
-                trajectory: this.state.currentTrajectory,
-                flightModes: this.state.flightModeChanges
-            }
-
-            // Safety check: ensure telemetry data is complete before making the request
-            if (
-                Object.keys(telemetry.attitude).length === 0 ||
-                telemetry.trajectory.length === 0 ||
-                telemetry.flightModes.length === 0
-            ) {
-                console.warn('[LLM] Telemetry data is incomplete. Skipping LLM call.')
-                return
-            }
-
-            // Make request to backend LLM endpoint
-            fetch('http://127.0.0.1:8000/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    question: 'What was the max altitude?',
-                    telemetry: telemetry
-                })
-            })
-                .then(async res => {
-                    if (!res.ok) {
-                        const errorText = await res.text()
-                        throw new Error(`[${res.status}] ${errorText}`)
-                    }
-                    return res.json()
-                })
-                .then(data => {
-                    alert('LLM Answer: ' + data.answer)
-                })
-                .catch(err => {
-                    console.error('[LLM ERROR]', err)
-                    alert('LLM request failed: ' + err.message)
-                })
+            this.state.showChat = true // Enable chat widget after processing
 
             // Change to plot view after 2 seconds so the Processed status is readable
             setTimeout(() => { this.$eventHub.$emit('set-selected', 'plot') }, 2000)
@@ -281,7 +243,8 @@ export default {
         DeviceIDViewer,
         AttitudeViewer,
         MagFitTool,
-        EkfHelperTool
+        EkfHelperTool,
+        ChatWidget
     },
     computed: {
         mapOk () {
