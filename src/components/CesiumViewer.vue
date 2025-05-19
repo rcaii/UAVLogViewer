@@ -23,7 +23,6 @@
 import {
     Ion,
     Color,
-    createDefaultImageryProviderViewModels,
     ProviderViewModel,
     UrlTemplateImageryProvider,
     Viewer, createWorldTerrainAsync,
@@ -70,7 +69,7 @@ import tzlookup from 'tz-lookup'
 import { store } from './Globals.js'
 import { DataflashDataExtractor } from '../tools/dataflashDataExtractor'
 import { MavlinkDataExtractor } from '../tools/mavlinkDataExtractor'
-import { DjiDataExtractor as djiDataExtractor } from '../tools/djiDataExtractor'
+import { DjiDataExtractor } from '../tools/djiDataExtractor'
 import 'cesium/Build/Cesium/Widgets/widgets.css'
 import CesiumSettingsWidget from './widgets/CesiumSettingsWidget.vue'
 import ColorCoderMode from './cesiumExtra/colorCoderMode.js'
@@ -85,8 +84,11 @@ import {
     isPointInPolygon
 } from './cesiumExtra/boundingPolygon.js'
 
-Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI2MmM0MDgzZC00OGVkLTRjZ' +
-    'TItOWI2MS1jMGVhYTM2MmMzODYiLCJpZCI6MjczNywiaWF0IjoxNjYyMTI4MjkxfQ.fPqhawtYLhwyZirKCi8fEjPEIn1CjYqETvA0bYYhWRA'
+// Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI2MmM0MDgzZC00OGVkLTRjZ' +
+//     'TItOWI2MS1jMGVhYTM2MmMzODYiLCJpZCI6MjczNywiaWF0IjoxNjYyMTI4MjkxfQ.fPqhawtYLhwyZirKCi8fEjPEIn1CjYqETvA0bYYhWRA'
+
+Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIxZGU3NjA0Ny00OTRlLTRkZDMtODAwZi1mNG' +
+    'ViYmFmZWU4ZDciLCJpZCI6MzAzNjA2LCJpYXQiOjE3NDc2MDE3Nzd9.BVZYfSy7gVQUy7VtyeL5AG6sgktjerP1XiX95xw9xho'
 
 const colorCoderMode = new ColorCoderMode(store)
 const colorCoderRange = new ColorCoderRange(store)
@@ -297,7 +299,8 @@ export default {
             /*
             *  Creates and returns the providers for viewing the Eniro, Statkart, and OpenSeaMap map layers
             * */
-            const imageryProviders = createDefaultImageryProviderViewModels()
+            // const imageryProviders = createDefaultImageryProviderViewModels()
+            const imageryProviders = []
             imageryProviders.push(new ProviderViewModel({
                 name: 'StatKart',
                 iconUrl: require('../assets/statkart.jpg').default,
@@ -1367,7 +1370,7 @@ export default {
                     dataExtractor = MavlinkDataExtractor
                 } else if (this.state.logType === 'dji') {
                     console.log('Using DJI extractor')
-                    dataExtractor = djiDataExtractor
+                    dataExtractor = DjiDataExtractor
                 } else {
                     dataExtractor = DataflashDataExtractor
                 }

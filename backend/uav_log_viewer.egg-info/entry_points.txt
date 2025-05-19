@@ -1,0 +1,2 @@
+[console_scripts]
+uav-log-viewer = uav_log_viewer.run:main

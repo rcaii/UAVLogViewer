@@ -20,7 +20,24 @@
                 <div class="messages" ref="messagesContainer">
                     <div v-for="(message, index) in messages" :key="index"
                         :class="['message', message.role]">
+                        <div class="message-meta">
+                            <strong>{{ message.role === 'user' ? 'You' : 'Assistant' }}</strong>
+                            · {{ message.time }}
+                        </div>
                         <div class="message-content" v-html="renderMarkdown(message.content)"></div>
+                        <!-- Add suggested questions after assistant messages -->
+                        <div v-if="message.role === 'assistant' && message.suggestedQuestions"
+                             class="suggested-questions">
+                            <div class="suggested-questions-label">Suggested questions:</div>
+                            <button
+                                v-for="(question, qIndex) in message.suggestedQuestions"
+                                :key="qIndex"
+                                class="suggested-question-btn"
+                                @click="handleSuggestedQuestion(question)"
+                                :title="question">
+                                {{ question }}
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <div class="input-container">
@@ -56,7 +73,8 @@ export default {
             isExpanded: false,
             isDragging: false,
             dragOffset: { x: 0, y: 0 },
-            originalSize: { width: 400, height: 600 }
+            originalSize: { width: 400, height: 600 },
+            sessionId: Date.now().toString() // Add unique session ID
         }
     },
     watch: {
@@ -158,13 +176,18 @@ export default {
                 container.scrollTop = container.scrollHeight
             }
         },
+        handleSuggestedQuestion (question) {
+            this.userInput = question
+            this.sendMessage()
+        },
         async sendMessage () {
             if (!this.userInput.trim() || this.isLoading) return
 
             // Add user message to chat
             this.messages.push({
                 role: 'user',
-                content: this.userInput
+                content: this.userInput,
+                time: new Date().toLocaleTimeString()
             })
 
             const question = this.userInput
@@ -177,17 +200,19 @@ export default {
                     attitude: this.state.timeAttitude,
                     trajectory: this.state.currentTrajectory,
                     flightModes: this.state.flightModeChanges,
-                    messages: this.state.messages,
-                    airspeed: this.state.messages?.ARSP || this.state.messages?.ASP2 || this.state.messages?.VFR_HUD,
-                    groundSpeed: this.state.messages?.VFR_HUD?.groundspeed || this.state.messages?.GPS?.vel,
-                    gps: this.state.messages?.GPS,
-                    altitude: this.state.messages?.VFR_HUD?.alt || this.state.messages?.GPS?.alt
+                    messages: this.state.messages
                 }
+
+                console.log('Sending telemetry: ', telemetry)
 
                 const response = await fetch('http://127.0.0.1:8000/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ question, telemetry })
+                    body: JSON.stringify({
+                        question,
+                        telemetry,
+                        sessionId: this.sessionId
+                    })
                 })
 
                 if (!response.ok) {
@@ -196,10 +221,12 @@ export default {
 
                 const data = await response.json()
 
-                // Add AI response to chat
+                // Add AI response to chat with suggested questions
                 this.messages.push({
                     role: 'assistant',
-                    content: data.answer
+                    content: data.answer,
+                    suggestedQuestions: data.suggested_questions,
+                    time: new Date().toLocaleTimeString()
                 })
             } catch (error) {
                 console.error('Error:', error)
@@ -439,5 +466,59 @@ export default {
 
 .message-content :deep(strong) {
     font-weight: 600;
+}
+
+.suggested-questions {
+    margin-top: 12px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.suggested-questions-label {
+    font-size: 0.9em;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.suggested-question-btn {
+    display: inline-block;
+    margin: 4px;
+    padding: 6px 12px;
+    background: #f0f2f5;
+    border-radius: 16px;
+    font-size: 0.9em;
+    color: #2c3e50;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid #e0e3e7;
+}
+
+.suggested-question-btn:hover {
+    background: #e4e7eb;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.message.assistant .suggested-questions {
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.message.assistant .suggested-questions-label {
+    color: #666;
+}
+
+.message.assistant .suggested-question-btn {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+}
+
+.message.assistant .suggested-question-btn:hover {
+    background: #e9ecef;
+}
+
+.message-meta {
+    font-size: 0.75em;
+    margin-bottom: 4px;
+    color: #555;
 }
 </style>
