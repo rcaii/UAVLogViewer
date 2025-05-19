@@ -24,6 +24,7 @@ Upload a `tlog` or `.bin`, explore plots, and ask natural-language questions suc
 
 ## 🖼️ Project Structure
 
+```bash
 UAVLogViewer
 ├─ backend                     # (ADDED)
 │  ├─ run.py                   # local entry-point: uvicorn
