@@ -36,10 +36,10 @@ jobs:
             - name: deploy to server
               uses: AEnterprise/rsync-deploy@v1.0.2
               env:
-                  DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
-                  ARGS: "-e -c -r --delete"
-                  SERVER_PORT: ${{ secrets.SERVER_PORT }}
-                  FOLDER: "dist/*"
-                  SERVER_IP: ${{ secrets.SERVER_IP }}
-                  USERNAME: ${{ secrets.USERNAME }}
-                  SERVER_DESTINATION: ${{ secrets.SERVER_DESTINATION }}
+                DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
+                ARGS: "-avzr --delete"    # Changed from -e -c -r for better compatibility
+                SERVER_PORT: "22"         # Hardcoded standard SSH port
+                FOLDER: "dist/*"          # Your build output folder
+                SERVER_IP: ${{ secrets.SERVER_IP }}
+                USERNAME: ${{ secrets.USERNAME }}
+                SERVER_DESTINATION: ${{ secrets.SERVER_DESTINATION }}
