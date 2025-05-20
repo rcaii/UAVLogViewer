@@ -24,6 +24,7 @@ Upload a `tlog` or `.bin`, explore plots, and ask natural-language questions suc
 
 ## 🖼️ Project Structure
 
+```bash
 UAVLogViewer
 ├─ backend                     # (ADDED)
 │  ├─ run.py                   # local entry-point: uvicorn
@@ -70,6 +71,9 @@ UAVLogViewer
 └─ preview.gif                 # animated demo
 
 ---
+
+```
+
 
 ## 🚀 Quick Start
 
@@ -159,3 +163,4 @@ pytest                # once you add test_*.py
 * **build.yml** – Node build + unit tests  
 * **nodejsdeploy.yml** – rsync deploy (needs `DEPLOY_KEY`, `SERVER_IP`, `USERNAME`, `SERVER_DESTINATION` and `SERVER_PORT` GitHub Secrets)  
 * **release.yml** – Docker build & push (optional)
+
