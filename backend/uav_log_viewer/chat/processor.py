@@ -91,8 +91,18 @@ def process_chat_request(question: str, telemetry: Dict[str, Any] | None) -> Dic
     if telemetry is not None:
         anomaly_answer = analyse_query(question, telemetry)
         if anomaly_answer is not None:
-            conversation_state.append("assistant", anomaly_answer)
-            return {"answer": anomaly_answer, "suggested_questions": []}
+            # Split the LLM response into <answer> / <suggested_questions>
+            try:
+                parts = extract_response_parts(anomaly_answer)
+                answer_text = parts["answer"] or anomaly_answer
+                suggestions = parts["suggested_questions"]
+            except Exception:
+                # Fallback – treat everything as the answer
+                answer_text = anomaly_answer
+                suggestions = []
+
+            conversation_state.append("assistant", answer_text)
+            return {"answer": answer_text, "suggested_questions": suggestions}
 
     # 3) UAV metric Q&A
     if telemetry is not None and _is_uav_question(question):
